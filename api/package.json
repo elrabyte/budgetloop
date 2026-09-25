@@ -1,0 +1,41 @@
+{
+  "name": "budgetloop-api",
+  "version": "1.0.0",
+  "description": "BudgetLoop API - Fastify + Prisma + SQLite",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "private": "true",
+  "dependencies": {
+    "@fastify/cors": "^11.3.0",
+    "@prisma/adapter-better-sqlite3": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "better-sqlite3": "12.11.1",
+    "fastify": "^5.12.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "prisma": "7.10.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "better-sqlite3@12.11.1": true,
+    "prisma@7.10.0": true,
+    "@prisma/engines@7.10.0": true
+  }
+}

@@ -81,7 +81,7 @@ npm run dev                 # starts Vite on http://localhost:5173
 
 The client always calls relative `/api/...` URLs. In dev, Vite proxies `/api` to
 `http://localhost:4000` (see `client/vite.config.ts`); in production, nginx does the same (see
-`client/nginx.conf`). So run the API (above) alongside the client dev server for everything to
+`client/nginx.conf.template`). So run the API (above) alongside the client dev server for everything to
 work end-to-end.
 
 Other useful scripts (run from `client/`): `npm run build`, `npm run lint` (oxlint).
@@ -121,6 +121,15 @@ not a `build:` context.
 3. **Fallback**: if your SCALE version's YAML editor rejects something here, SSH into TrueNAS and
    run `docker compose -f docker-compose.truenas.yml up -d` directly. This works (SCALE is Docker
    under the hood) but the app won't show up as a managed "App" in the UI.
+
+**Important**: install both services as *one* app/stack (step 2 above), not as two separate
+"Custom App" wizard entries. `client`'s nginx proxies `/api/` requests to the hostname `api`
+(the `API_HOST` env var, default `api`), which only resolves because Docker Compose puts both
+containers on the same per-stack network. Two independent standalone apps don't share a network,
+so `client` can't reach `api` and nginx fails to start (`host not found in upstream "api"`). If
+you really do need them as separate standalone apps, set the `client` container's `API_HOST`
+(and `API_PORT` if you didn't use 4000) environment variable to wherever `api` is actually
+reachable, e.g. your TrueNAS host's IP and the port you published `api` on.
 
 Remember: there's no authentication, so keep this on your LAN (e.g. don't forward the port through
 your router).

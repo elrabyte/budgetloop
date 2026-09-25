@@ -4,7 +4,7 @@ version: "3.9"
 #   docker compose up --build
 # - api:    Fastify + TypeScript + Prisma REST API, backed by a single SQLite file stored on the
 #           `budgetloop-data` volume (see api/Dockerfile - migrations run automatically on start).
-# - client: React SPA, served by nginx, proxies /api to the api service (see client/nginx.conf).
+# - client: React SPA, served by nginx, proxies /api to the api service (see client/nginx.conf.template).
 #
 # No database container is needed - SQLite is just a file, which keeps this a simple 2-container
 # stack. This is also a single-user, LAN-only app with no authentication: do not expose it

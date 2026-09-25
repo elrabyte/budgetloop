@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     // Proxies /api to the local API dev server (see api/README / npm run dev) so the client can
     // always call relative `/api/...` URLs, both here and in production behind nginx (see
-    // client/Dockerfile + client/nginx.conf).
+    // client/Dockerfile + client/nginx.conf.template).
     proxy: {
       '/api': {
         target: 'http://localhost:4000',

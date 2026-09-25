@@ -14,6 +14,12 @@ COPY package.json package-lock.json* ./
 RUN npm install
 
 COPY . .
+# prisma.config.ts resolves DATABASE_URL at config-load time (via env("DATABASE_URL")) and
+# throws if it's unresolvable; the real value is only set later in the runtime stage below,
+# and build stages don't share ENV state, so a placeholder is needed here too. `prisma generate`
+# only reads the schema to produce the client - it never opens a DB connection - so any
+# syntactically valid value works.
+ENV DATABASE_URL="file:./data/budgetloop.db"
 RUN npx prisma generate
 RUN npm run build
 

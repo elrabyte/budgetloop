@@ -1,0 +1,98 @@
+// BudgetLoop data model (v1)
+//
+// Design notes:
+// - SQLite is the only datasource (single file, no separate DB container).
+// - SQLite has no native enum or arbitrary-precision decimal type support in Prisma, so:
+//     - `intervalUnit` is a String, validated at the application layer against
+//       IntervalUnit = "Day" | "Week" | "Month" | "Year" (see src/domain/recurrence.ts).
+//     - Money amounts are stored as Float. For a single-user, self-hosted budgeting app this is
+//       an acceptable trade-off (no multi-currency, no cent-level financial reconciliation).
+// - Category / Account / PaymentMethod are separate lookup tables (not enums) so the user can
+//   manage their own lists from Settings, and so a future `TransactionMapping` table (out of
+//   scope for v1 - see README) can reference RecurringExpense/Category by FK without reshaping
+//   this schema.
+// - No precomputed monthly/yearly equivalents are stored anywhere; they are always derived from
+//   amount + intervalUnit + intervalValue (see src/domain/recurrence.ts).
+// - Uses the `driverAdapters` preview feature with `@prisma/adapter-better-sqlite3` instead of
+//   Prisma's bundled native query engine binary. This avoids needing a platform-specific Prisma
+//   engine binary (which historically has spotty Windows-on-ARM support) at the cost of one extra
+//   dependency (`better-sqlite3`, which has broad prebuilt-binary platform coverage).
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recurringExpenses RecurringExpense[]
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recurringExpenses RecurringExpense[]
+}
+
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recurringExpenses RecurringExpense[]
+}
+
+model RecurringExpense {
+  id              String   @id @default(cuid())
+  name            String
+  amount          Float
+  // "Day" | "Week" | "Month" | "Year" - validated in application code, see
+  // src/domain/recurrence.ts. SQLite has no native enum support in Prisma.
+  intervalUnit    String
+  intervalValue   Int      @default(1)
+  startDate       DateTime?
+  // Explicit override for the next due date. When null, the next due date is derived from
+  // startDate + interval (see src/domain/recurrence.ts::computeNextDueDate).
+  nextDueDate     DateTime?
+  // Free-text notes; also a workaround/documentation field for anything the interval picker
+  // can't express cleanly (mirrors the spreadsheet's Kommentar column).
+  comment         String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  categoryId      String
+  accountId       String
+  paymentMethodId String
+
+  category      Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  account       Account       @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId])
+  @@index([accountId])
+  @@index([paymentMethodId])
+}
+
+model IncomeSource {
+  id            String   @id @default(cuid())
+  name          String
+  amount        Float
+  intervalUnit  String
+  intervalValue Int      @default(1)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

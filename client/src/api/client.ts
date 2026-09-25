@@ -1,6 +1,6 @@
 /** Small fetch wrapper for the BudgetLoop API. All requests are relative to `/api`, proxied to
  * the API server by Vite in dev (see vite.config.ts) and by nginx in production (see
- * client/nginx.conf). */
+ * client/nginx.conf.template). */
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
